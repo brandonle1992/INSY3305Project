@@ -1,0 +1,659 @@
+SQL> 
+SQL> --Brandon Le
+SQL> --Project 3
+SQL> 
+SQL> COLUMN RoomType FORMAT A10
+SQL> COLUMN AgentType FORMAT A10
+SQL> COLUMN CustType FORMAT A10
+SQL> COLUMN RateType FORMAT A10
+SQL> COLUMN CheckinDate FORMAT A15
+SQL> COLUMN CheckoutDate FORMAT A15
+SQL> COLUMN RmType FORMAT A10
+SQL> COLUMN TotalCharge FORMAT A11
+SQL> 
+SQL> SET LINESIZE 100
+SQL> 
+SQL> --1
+SQL> UPDATE ResDetail_btl
+  2  	     SET RoomNum = 321,
+  3  		     RateType = 'C',
+  4  		     RateAmt = 110
+  5  	     WHERE ResID = 1010;
+
+1 row updated.
+
+SQL> 
+SQL> --2
+SQL> UPDATE Customer_btl
+  2  	     SET CustType = 'C'
+  3  	     WHERE CustID = 120;
+
+1 row updated.
+
+SQL> 
+SQL> --3
+SQL> INSERT INTO Room_btl VALUES(301, 'D');
+
+1 row created.
+
+SQL> INSERT INTO Room_btl VALUES(303, 'D');
+
+1 row created.
+
+SQL> INSERT INTO Room_btl VALUES(304, 'KS');
+
+1 row created.
+
+SQL> 
+SQL> --4
+SQL> INSERT INTO ResDetail_btl VALUES(1005, 303, 'W', 119);
+
+1 row created.
+
+SQL> INSERT INTO ResDetail_btl VALUES(1005, 304, 'S', 149);
+
+1 row created.
+
+SQL> 
+SQL> --5
+SQL> INSERT INTO Customer_btl VALUES((SELECT MAX(CustID)
+  2  	     FROM Customer_btl) + 1, 'Susan', 'White', 2145552020, 'C', NULL);
+
+1 row created.
+
+SQL> 
+SQL> COMMIT;
+
+Commit complete.
+
+SQL> 
+SQL> --6
+SQL> SELECT CustID AS "CustID",CustFName AS "CustFName",CustLName AS "CustLName" FROM Customer_btl
+  2  	     WHERE CustPhone is NULL
+  3  	     ORDER BY CustID;
+
+    CustID CustFName  CustLName                                                                     
+---------- ---------- ---------------                                                               
+        15 Jeff       Miner                                                                         
+        23 Shelby     Day                                                                           
+       120 Amanda     Green                                                                         
+
+SQL> 
+SQL> --7 AvgRate as the column heading
+SQL> SELECT TO_CHAR(AVG(RateAmt), '$999.99') AS "AvgRate" FROM ResDetail_btl;
+
+AvgRate                                                                                             
+--------                                                                                            
+ $120.71                                                                                            
+
+SQL> 
+SQL> --8 RoomResCount as the column heading.
+SQL> SELECT COUNT(DISTINCT RoomNum) AS "RoomResCount"
+  2  	     FROM ResDetail_btl;
+
+RoomResCount                                                                                        
+------------                                                                                        
+          11                                                                                        
+
+SQL> 
+SQL> --9 column headings:  RoomType, RoomCount
+SQL> SELECT RoomType AS "RoomType", COUNT(RoomType) AS "RoomCount"
+  2  	     FROM Room_btl
+  3  	     GROUP BY RoomType;
+
+RoomType    RoomCount                                                                               
+---------- ----------                                                                               
+K                   3                                                                               
+D                   6                                                                               
+KS                  3                                                                               
+
+SQL> 
+SQL> --10 column headings:  ResNum, CheckIn, CheckOut, RoomCount
+SQL> SELECT Res.ResID AS "ResNum", CheckinDate AS "CheckIn", CheckoutDate AS "CheckOut", COUNT(RoomNum) AS "RoomCount"
+  2  	     FROM Reservation_btl Res
+  3  	     LEFT JOIN ResDetail_btl ResD ON Res.ResID = ResD.ResID
+  4  	     GROUP BY Res.ResID, CheckinDate, CheckoutDate;
+
+    ResNum CheckIn   CheckOut   RoomCount                                                           
+---------- --------- --------- ----------                                                           
+      1009 01-MAR-18 04-MAR-18          1                                                           
+      1008 23-MAR-18 25-MAR-18          2                                                           
+      1005 15-FEB-18 18-FEB-18          3                                                           
+      1001 05-FEB-18 08-FEB-18          2                                                           
+      1003 09-FEB-18 11-FEB-18          1                                                           
+      1010 01-MAR-18 03-MAR-18          1                                                           
+      1002 01-FEB-18 03-FEB-18          1                                                           
+      1006 24-FEB-18 26-FEB-18          2                                                           
+      1004 22-FEB-18 23-FEB-18          1                                                           
+      1007 20-FEB-18 25-FEB-18          1                                                           
+      1011 01-MAR-18 04-MAR-18          2                                                           
+
+11 rows selected.
+
+SQL> 
+SQL> --11a column headings:  CustomerID, CustomerName, ResCount
+SQL> SELECT C.CustID AS "CustID", CustFName || ' ' || CustLName AS "CustomerName", COUNT(ResID) AS "ResCount"
+  2  	     FROM Customer_btl C
+  3  	     LEFT JOIN Reservation_btl R ON C.CustID = R.CustID
+  4  	     GROUP BY C.CUSTID, CustFName, CustLName
+  5  	     ORDER BY "ResCount" DESC, C.CustID;
+
+    CustID CustomerName                 ResCount                                                    
+---------- -------------------------- ----------                                                    
+        85 Wesley Tanner                       2                                                    
+       100 Breanna Rhodes                      2                                                    
+        15 Jeff Miner                          1                                                    
+        23 Shelby Day                          1                                                    
+        28 Renee Walker                        1                                                    
+        77 Kim Jackson                         1                                                    
+        97 Chris Mancha                        1                                                    
+       119 Mary Vaughn                         1                                                    
+       120 Amanda Green                        1                                                    
+       121 Susan White                         0                                                    
+
+10 rows selected.
+
+SQL> 
+SQL> --11b column headings:  ResNum, RmNum, RateType, RateAmt
+SQL> SELECT ResID AS "ResNum", RoomNum AS "RmNum", RateType AS "RateType", RateAmt AS "RateAmt"
+  2  	     FROM ResDetail_btl
+  3  	     ORDER BY ResID, RoomNum;
+
+    ResNum      RmNum RateType      RateAmt                                                         
+---------- ---------- ---------- ----------                                                         
+      1001        224 C                 120                                                         
+      1001        225 C                 125                                                         
+      1002        305 S                 149                                                         
+      1003        409 C                  89                                                         
+      1004        320 C                 110                                                         
+      1005        302 S                 139                                                         
+      1005        303 W                 119                                                         
+      1005        304 S                 149                                                         
+      1006        501 W                 119                                                         
+      1006        502 W                 119                                                         
+      1007        302 S                 139                                                         
+
+    ResNum      RmNum RateType      RateAmt                                                         
+---------- ---------- ---------- ----------                                                         
+      1008        320 W                  89                                                         
+      1008        321 W                  99                                                         
+      1009        502 W                 129                                                         
+      1010        321 C                 110                                                         
+      1011        224 W                 119                                                         
+      1011        225 W                 129                                                         
+
+17 rows selected.
+
+SQL> 
+SQL> --12 column headings:  RateType, Description, ResCount
+SQL> SELECT RT.RateType AS "RateType", RateTypeDesc AS "Description", COUNT(R.RateType) AS "ResCount"
+  2  	     FROM RateType_btl RT, ResDetail_btl R
+  3  	     WHERE R.RateType = RT.RateType
+  4  	     GROUP BY RT.RateType, RateTypeDesc
+  5  	     ORDER BY "ResCount" DESC;
+
+RateType   Description                 ResCount                                                     
+---------- ------------------------- ----------                                                     
+W          Weekend                            8                                                     
+C          Corporate                          5                                                     
+S          Standard                           4                                                     
+
+SQL> 
+SQL> --13 column headings:  Customer_ID, First_Name, Last_Name, Phone
+SQL> SELECT CustID AS "Customer_ID", CustFName AS "First_Name", CustLName AS "Last_Name", '(' || SUBSTR(CustPhone, 1,3) || ')-' || SUBSTR(CustPhone, 4,3) || '-' || SUBSTR(CustPhone,7,4) AS "Phone"
+  2  	     FROM Customer_btl
+  3  	     ORDER BY CustID;
+
+Customer_ID First_Name Last_Name       Phone                                                        
+----------- ---------- --------------- --------------------------------------------                 
+         15 Jeff       Miner           ()--                                                         
+         23 Shelby     Day             ()--                                                         
+         28 Renee      Walker          (214)-555-1193                                               
+         77 Kim        Jackson         (817)-555-4911                                               
+         85 Wesley     Tanner          (214)-555-1234                                               
+         97 Chris      Mancha          (469)-555-3440                                               
+        100 Breanna    Rhodes          (214)-555-9191                                               
+        119 Mary       Vaughn          (817)-555-2334                                               
+        120 Amanda     Green           ()--                                                         
+        121 Susan      White           (214)-555-2020                                               
+
+10 rows selected.
+
+SQL> 
+SQL> --14 column headings:  ResNum, RmNum, RmType, RmDesc, RateType, RateDesc, RateAmt
+SQL> SELECT RD.ResID AS "ResNum", RD.RoomNum AS "RmNum", R.RoomType AS "RmType", RoomTypeDesc AS "RmDesc", RD.RateType AS "RateType", RateTypeDesc AS "RateDesc", TO_CHAR(RateAmt, '$999.99') AS "RateAmt"
+  2  	     FROM ResDetail_btl RD, Room_btl R, RoomType_btl RT, RateType_btl RTY
+  3  	     WHERE RD.RateType = RTY.RateType AND
+  4  		       RD.RoomNum = R.RoomNum AND
+  5  		       R.RoomType = RT.RoomType AND
+  6  		       (ResID, RateAmt) IN
+  7  			     (SELECT ResID, MIN(RateAmt)
+  8  			     FROM ResDetail_btl
+  9  			     GROUP BY ResID )
+ 10  	     ORDER BY "RateAmt" DESC;
+
+    ResNum      RmNum RmType     RmDesc                    RateType   RateDesc                      
+---------- ---------- ---------- ------------------------- ---------- -------------------------     
+RateAmt                                                                                             
+--------                                                                                            
+      1002        305 D          2 Double Beds             S          Standard                      
+ $149.00                                                                                            
+                                                                                                    
+      1007        302 K          King Bed                  S          Standard                      
+ $139.00                                                                                            
+                                                                                                    
+      1009        502 KS         King Suite                W          Weekend                       
+ $129.00                                                                                            
+                                                                                                    
+
+    ResNum      RmNum RmType     RmDesc                    RateType   RateDesc                      
+---------- ---------- ---------- ------------------------- ---------- -------------------------     
+RateAmt                                                                                             
+--------                                                                                            
+      1001        224 K          King Bed                  C          Corporate                     
+ $120.00                                                                                            
+                                                                                                    
+      1005        303 D          2 Double Beds             W          Weekend                       
+ $119.00                                                                                            
+                                                                                                    
+      1006        501 KS         King Suite                W          Weekend                       
+ $119.00                                                                                            
+                                                                                                    
+
+    ResNum      RmNum RmType     RmDesc                    RateType   RateDesc                      
+---------- ---------- ---------- ------------------------- ---------- -------------------------     
+RateAmt                                                                                             
+--------                                                                                            
+      1006        502 KS         King Suite                W          Weekend                       
+ $119.00                                                                                            
+                                                                                                    
+      1011        224 K          King Bed                  W          Weekend                       
+ $119.00                                                                                            
+                                                                                                    
+      1010        321 K          King Bed                  C          Corporate                     
+ $110.00                                                                                            
+                                                                                                    
+
+    ResNum      RmNum RmType     RmDesc                    RateType   RateDesc                      
+---------- ---------- ---------- ------------------------- ---------- -------------------------     
+RateAmt                                                                                             
+--------                                                                                            
+      1004        320 D          2 Double Beds             C          Corporate                     
+ $110.00                                                                                            
+                                                                                                    
+      1003        409 D          2 Double Beds             C          Corporate                     
+  $89.00                                                                                            
+                                                                                                    
+      1008        320 D          2 Double Beds             W          Weekend                       
+  $89.00                                                                                            
+                                                                                                    
+
+12 rows selected.
+
+SQL> 
+SQL> 
+SQL> --15
+SQL> SELECT R.RoomNum, RT.RoomType, RoomTypeDesc, RateType, RateAmt
+  2  	     FROM ResDetail_btl RD, Room_btl R, RoomType_btl RT
+  3  	     WHERE RD.RoomNum = R.RoomNum AND
+  4  			     R.RoomType = RT.RoomType
+  5  	     ORDER BY RoomNum,RateAmt;
+
+   ROOMNUM ROOMTYPE   ROOMTYPEDESC              RATETYPE      RATEAMT                               
+---------- ---------- ------------------------- ---------- ----------                               
+       224 K          King Bed                  W                 119                               
+       224 K          King Bed                  C                 120                               
+       225 D          2 Double Beds             C                 125                               
+       225 D          2 Double Beds             W                 129                               
+       302 K          King Bed                  S                 139                               
+       302 K          King Bed                  S                 139                               
+       303 D          2 Double Beds             W                 119                               
+       304 KS         King Suite                S                 149                               
+       305 D          2 Double Beds             S                 149                               
+       320 D          2 Double Beds             W                  89                               
+       320 D          2 Double Beds             C                 110                               
+
+   ROOMNUM ROOMTYPE   ROOMTYPEDESC              RATETYPE      RATEAMT                               
+---------- ---------- ------------------------- ---------- ----------                               
+       321 K          King Bed                  W                  99                               
+       321 K          King Bed                  C                 110                               
+       409 D          2 Double Beds             C                  89                               
+       501 KS         King Suite                W                 119                               
+       502 KS         King Suite                W                 119                               
+       502 KS         King Suite                W                 129                               
+
+17 rows selected.
+
+SQL> 
+SQL> --16 column headings:  CustType, Description, Count
+SQL> SELECT C.CustType AS "CustType", CustDesc AS "Description", COUNT(C.CustType) AS "Count"
+  2  	     FROM Customer_btl C, CustType_btl CT
+  3  	     WHERE C.CustType = CT.CustType
+  4  	     GROUP BY C.CustType, CustDesc
+  5  	     ORDER BY "Count" DESC;
+
+CustType   Description               Count                                                          
+---------- -------------------- ----------                                                          
+I          Individual                    6                                                          
+C          Corporate                     4                                                          
+
+SQL> 
+SQL> --17
+SQL> SELECT ResID AS "ResNum", R.RoomNum, RT.RoomType, RoomTypeDesc, TO_CHAR(RateAmt, '$999.99') AS "RateAmt"
+  2  	     FROM ResDetail_btl RD, Room_btl R, RoomType_btl RT
+  3  	     WHERE RD.RoomNum = R.RoomNum AND
+  4  		       R.RoomType = RT.RoomType AND
+  5  		       RateAmt <= 119
+  6  	     ORDER BY "RateAmt" DESC, RoomNum;
+
+    ResNum    ROOMNUM ROOMTYPE   ROOMTYPEDESC              RateAmt                                  
+---------- ---------- ---------- ------------------------- --------                                 
+      1011        224 K          King Bed                   $119.00                                 
+      1005        303 D          2 Double Beds              $119.00                                 
+      1006        501 KS         King Suite                 $119.00                                 
+      1006        502 KS         King Suite                 $119.00                                 
+      1004        320 D          2 Double Beds              $110.00                                 
+      1010        321 K          King Bed                   $110.00                                 
+      1008        321 K          King Bed                    $99.00                                 
+      1008        320 D          2 Double Beds               $89.00                                 
+      1003        409 D          2 Double Beds               $89.00                                 
+
+9 rows selected.
+
+SQL> 
+SQL> --18
+SQL> SELECT R.ResID AS "ResNum", TO_CHAR(CheckinDate, 'mm-dd-yyyy') AS CheckinDate, TO_CHAR(CheckoutDate, 'mm-dd-yyyy') AS CheckoutDate, C.CustID, C.CustFName, C.CustLName, COUNT(RD.RoomNum) AS "Count"
+  2  	     FROM Reservation_btl R, Customer_btl C, ResDetail_btl RD
+  3  	     WHERE RD.ResID = R.ResID AND
+  4  		       C.CustID = R.CustID
+  5  	     GROUP BY R.ResID, CheckinDate, CheckoutDate, C.CustID, C.CustFName, C.CustLName
+  6  	     ORDER BY R.ResID;
+
+    ResNum CHECKINDATE     CHECKOUTDATE        CUSTID CUSTFNAME  CUSTLNAME            Count         
+---------- --------------- --------------- ---------- ---------- --------------- ----------         
+      1001 02-05-2018      02-08-2018              85 Wesley     Tanner                   2         
+      1002 02-01-2018      02-03-2018             100 Breanna    Rhodes                   1         
+      1003 02-09-2018      02-11-2018              15 Jeff       Miner                    1         
+      1004 02-22-2018      02-23-2018              77 Kim        Jackson                  1         
+      1005 02-15-2018      02-18-2018             119 Mary       Vaughn                   3         
+      1006 02-24-2018      02-26-2018              97 Chris      Mancha                   2         
+      1007 02-20-2018      02-25-2018             100 Breanna    Rhodes                   1         
+      1008 03-23-2018      03-25-2018              85 Wesley     Tanner                   2         
+      1009 03-01-2018      03-04-2018              28 Renee      Walker                   1         
+      1010 03-01-2018      03-03-2018              23 Shelby     Day                      1         
+      1011 03-01-2018      03-04-2018             120 Amanda     Green                    2         
+
+11 rows selected.
+
+SQL> 
+SQL> --19.
+SQL> SELECT ResID AS "ResNum", R.RoomNum AS "RmNum", RoomTypeDesc AS "RoomType",  RateTypeDesc AS "RateType", TO_CHAR(RateAmt, '$999.99') AS "Rate"
+  2  	     FROM ResDetail_btl RD, Room_btl R, RoomType_btl RT, RateType_btl RA
+  3  	     WHERE RT.RoomType = R.RoomType AND
+  4  	       R.RoomNum = RD.RoomNum AND
+  5  			       RD.RateType = RA.RateType AND
+  6  	       ResID = 1005 AND
+  7  	       RateAmt in
+  8  	       (SELECT MAX(RateAmt) FROM ResDetail_btl);
+
+    ResNum      RmNum RoomType   RateType   Rate                                                    
+---------- ---------- ---------- ---------- --------                                                
+      1005        304 King Suite Standard    $149.00                                                
+
+SQL> --19 column headings:  ResNum, RmNum, RoomType, RateType, Rate
+SQL> SELECT ResID AS "ResNum", R.RoomNum AS "RmNum", RT.RoomType AS "RoomType", RateType AS "RateType", TO_CHAR(RateAmt, '$999.99') AS "Rate"
+  2  	     FROM ResDetail_btl RD, Room_btl R, RoomType_btl RT
+  3  	     WHERE RT.RoomType = R.RoomType AND
+  4  		       R.RoomNum = RD.RoomNum AND
+  5  		       ResID = 1005 AND
+  6  		       RateAmt in
+  7  		       (SELECT MAX(RateAmt) FROM ResDetail_btl);
+
+    ResNum      RmNum RoomType   RateType   Rate                                                    
+---------- ---------- ---------- ---------- --------                                                
+      1005        304 KS         S           $149.00                                                
+
+SQL> 
+SQL> 
+SQL> --20 column headings:  AgentType, Desc, Count
+SQL> SELECT A.AgentType AS "AgentType", AgentDesc AS "Desc", Count(A.AgentType) AS "Count"
+  2  	     FROM Agent_btl A, AgentType_btl ATT
+  3  	     WHERE A.AgentType = ATT.AgentType
+  4  	     GROUP BY A.AgentType, AgentDesc
+  5  	     ORDER BY "Count";
+
+AgentType  Desc                      Count                                                          
+---------- -------------------- ----------                                                          
+RC         Res Center                    1                                                          
+FD         Front Desk                    1                                                          
+T          Telephone                     2                                                          
+
+SQL> 
+SQL> 
+SQL> --21
+SQL> SELECT ResID AS "ResNum", RD.RoomNum, RoomTypeDesc, RateTypeDesc, RateAmt
+  2  	     FROM ResDetail_btl RD, Room_btl R, RateType_btl RT, RoomType_btl RR
+  3  	     WHERE RD.RoomNum = R.RoomNum AND
+  4  		       R.RoomType = RR.RoomType AND
+  5  		       RD.RateType = RT.RateType AND
+  6  		       RateAmt > (SELECT AVG(RateAmt) FROM ResDetail_btl)
+  7  	     ORDER BY RoomNum;
+
+    ResNum    ROOMNUM ROOMTYPEDESC              RATETYPEDESC                 RATEAMT                
+---------- ---------- ------------------------- ------------------------- ----------                
+      1001        225 2 Double Beds             Corporate                        125                
+      1011        225 2 Double Beds             Weekend                          129                
+      1005        302 King Bed                  Standard                         139                
+      1007        302 King Bed                  Standard                         139                
+      1005        304 King Suite                Standard                         149                
+      1002        305 2 Double Beds             Standard                         149                
+      1009        502 King Suite                Weekend                          129                
+
+7 rows selected.
+
+SQL> 
+SQL> --22 column headings:  RmNum, RmType, RateType, RateAmt
+SQL> SELECT DISTINCT(RD.RoomNum) AS "RmNum", R.RoomType AS "RmType", RD.RateType AS "RateType", RateAmt AS "RateAmt"
+  2  	     FROM Room_btl R, ResDetail_btl RD, RoomType_btl RT, RateType_btl RA
+  3  	     WHERE RD.RoomNum = R.RoomNum AND
+  4  		       R.RoomType = RT.RoomType AND
+  5  		       RD.RateType = RA.RateType AND
+  6  		       RateAmt > 115
+  7  	     ORDER BY RateAmt DESC;
+
+     RmNum RmType     RateType      RateAmt                                                         
+---------- ---------- ---------- ----------                                                         
+       305 D          S                 149                                                         
+       304 KS         S                 149                                                         
+       302 K          S                 139                                                         
+       225 D          W                 129                                                         
+       502 KS         W                 129                                                         
+       225 D          C                 125                                                         
+       224 K          C                 120                                                         
+       303 D          W                 119                                                         
+       224 K          W                 119                                                         
+       501 KS         W                 119                                                         
+       502 KS         W                 119                                                         
+
+11 rows selected.
+
+SQL> 
+SQL> --23
+SQL> SELECT R.RoomNum, RoomType AS "RoomType", COUNT(RD.RoomNum) AS "Count"
+  2  	     FROM Room_btl R
+  3  	     LEFT JOIN ResDetail_btl RD ON R.RoomNum = RD.RoomNum
+  4  	     GROUP BY R.RoomNum, RoomType
+  5  	     ORDER BY "Count";
+
+   ROOMNUM RoomType        Count                                                                    
+---------- ---------- ----------                                                                    
+       301 D                   0                                                                    
+       303 D                   1                                                                    
+       501 KS                  1                                                                    
+       305 D                   1                                                                    
+       409 D                   1                                                                    
+       304 KS                  1                                                                    
+       225 D                   2                                                                    
+       321 K                   2                                                                    
+       320 D                   2                                                                    
+       502 KS                  2                                                                    
+       302 K                   2                                                                    
+
+   ROOMNUM RoomType        Count                                                                    
+---------- ---------- ----------                                                                    
+       224 K                   2                                                                    
+
+12 rows selected.
+
+SQL> 
+SQL> --24 column headings:  CustID, FirstName, LastName, Phone.
+SQL> SELECT CustID AS "CustID", CustFName "FirstName", CustLName AS "LastName", '(' || SUBSTR(CustPhone, 1,3) || ')-' || SUBSTR(CustPhone, 4,3) || '-' || SUBSTR(CustPhone,7,4) AS "Phone"
+  2  	     FROM Customer_btl
+  3  	     WHERE LoyaltyID IS NOT NULL;
+
+    CustID FirstName  LastName        Phone                                                         
+---------- ---------- --------------- --------------------------------------------                  
+        85 Wesley     Tanner          (214)-555-1234                                                
+       100 Breanna    Rhodes          (214)-555-9191                                                
+        77 Kim        Jackson         (817)-555-4911                                                
+       119 Mary       Vaughn          (817)-555-2334                                                
+        97 Chris      Mancha          (469)-555-3440                                                
+        28 Renee      Walker          (214)-555-1193                                                
+
+6 rows selected.
+
+SQL> 
+SQL> --25 column headings:  Room, RoomType, RateType, Amt
+SQL> SELECT ResID, R.RoomNum AS "Room", R.RoomType AS "RoomType", RD.RateType AS "RateType", TO_CHAR(RateAmt, '$999.99') AS "Amt"
+  2  	     FROM ResDetail_btl RD, Room_btl R, RoomType_btl RT, RateType_btl RA
+  3  	     WHERE RT.RoomType = R.RoomType AND
+  4  		       R.RoomNum = RD.RoomNum AND
+  5  		       RA.RateType = RD.RateType AND
+  6  		       ResID = 1005 AND
+  7  		       RateAmt in
+  8  		       (SELECT MAX(RateAmt) FROM ResDetail_btl);
+
+     RESID       Room RoomType   RateType   Amt                                                     
+---------- ---------- ---------- ---------- --------                                                
+      1005        304 KS         S           $149.00                                                
+
+SQL> 
+SQL> --26
+SQL> SELECT ResID AS "ResNum", CheckinDate, CheckoutDate, R.CustID, CustLName, R.AgentID, AgentLName
+  2  	     FROM Reservation_btl R, Customer_btl C, Agent_btl A
+  3  	     WHERE R.CustID = C.CustID AND
+  4  		       R.AgentID = A.AgentID AND
+  5  		       CheckinDate <= '28-FEB-2018'
+  6  	     ORDER BY CheckinDate, ResID;
+
+    ResNum CHECKINDATE     CHECKOUTDATE        CUSTID CUSTLNAME          AGENTID AGENTLNAME         
+---------- --------------- --------------- ---------- --------------- ---------- ---------------    
+      1002 01-FEB-18       03-FEB-18              100 Rhodes                   5 May                
+      1001 05-FEB-18       08-FEB-18               85 Tanner                  20 Smith              
+      1003 09-FEB-18       11-FEB-18               15 Miner                   14 King               
+      1005 15-FEB-18       18-FEB-18              119 Vaughn                  20 Smith              
+      1007 20-FEB-18       25-FEB-18              100 Rhodes                  20 Smith              
+      1004 22-FEB-18       23-FEB-18               77 Jackson                 28 Schultz            
+      1006 24-FEB-18       26-FEB-18               97 Mancha                  14 King               
+
+7 rows selected.
+
+SQL> 
+SQL> --27
+SQL> SELECT R.RoomNum, R.RoomType, RoomTypeDesc, RateAmt
+  2  	     FROM Room_btl R, RateType_btl RT, RoomType_btl RR, ResDetail_btl RD
+  3  	     WHERE RD.RoomNum = R.RoomNum AND
+  4  		       R.RoomType = RR.RoomType AND
+  5  		       RD.RateType = RT.RateType AND
+  6  		       RateAmt > (SELECT AVG(RateAmt) FROM ResDetail_btl)
+  7  	     ORDER BY RateAmt DESC, R.RoomNum;
+
+   ROOMNUM ROOMTYPE   ROOMTYPEDESC                 RATEAMT                                          
+---------- ---------- ------------------------- ----------                                          
+       304 KS         King Suite                       149                                          
+       305 D          2 Double Beds                    149                                          
+       302 K          King Bed                         139                                          
+       302 K          King Bed                         139                                          
+       225 D          2 Double Beds                    129                                          
+       502 KS         King Suite                       129                                          
+       225 D          2 Double Beds                    125                                          
+
+7 rows selected.
+
+SQL> 
+SQL> --28 LoyaltyCount as the column heading
+SQL> SELECT COUNT(LoyaltyID) AS "LoyaltyCount" FROM Customer_btl;
+
+LoyaltyCount                                                                                        
+------------                                                                                        
+           6                                                                                        
+
+SQL> 
+SQL> --29 column headings:  AgentID, Agent, ResCount
+SQL> SELECT A.AgentID AS "AgentID", AgentFName || ' ' || AgentLName AS "Agent", COUNT(R.AgentID) AS "ResCount"
+  2  	     FROM Agent_btl A
+  3  	     RIGHT JOIN Reservation_btl R ON R.AgentID = A.AgentID
+  4  	     GROUP BY A.AgentID, AgentFName, AgentLName
+  5  	     ORDER BY "ResCount" DESC;
+
+   AgentID Agent                        ResCount                                                    
+---------- -------------------------- ----------                                                    
+        14 John King                           4                                                    
+        20 Megan Smith                         3                                                    
+         5 Janice May                          2                                                    
+        28 Ray Schultz                         2                                                    
+
+SQL> 
+SQL> --30 column headings:  AgentID, FirstName, LastName, ResCount
+SQL> SELECT A.AgentID AS "AgentID", AgentFName AS "FirstName", AgentLName AS "LastName", COUNT(R.AgentID) AS "ResCount"
+  2  	     FROM Agent_btl A
+  3  	     RIGHT JOIN Reservation_btl R ON R.AgentID = A.AgentID
+  4  	     HAVING COUNT(R.AgentID) > 1
+  5  	     GROUP BY A.AgentID, AgentFName, AgentLName
+  6  	     ORDER BY "ResCount" DESC, A.AgentID;
+
+   AgentID FirstName  LastName          ResCount                                                    
+---------- ---------- --------------- ----------                                                    
+        14 John       King                     4                                                    
+        20 Megan      Smith                    3                                                    
+         5 Janice     May                      2                                                    
+        28 Ray        Schultz                  2                                                    
+
+SQL> 
+SQL> --31 column headings:  Customer_ID, First_Name, Last_Name
+SQL> SELECT CustID AS "Customer_ID", CustFName AS "First_Name", CustLName AS "Last_Name"
+  2  	     FROM Customer_btl
+  3  	     WHERE CustLName LIKE 'W%' OR CustFName LIKE 'W%'
+  4  	     ORDER BY CustLName;
+
+Customer_ID First_Name Last_Name                                                                    
+----------- ---------- ---------------                                                              
+         85 Wesley     Tanner                                                                       
+         28 Renee      Walker                                                                       
+        121 Susan      White                                                                        
+
+SQL> 
+SQL> --32 column headings:  CustID, FirstName, LastName
+SQL> SELECT CustID AS "CustID", CustFName AS "FirstName", CustLName AS "LastName"
+  2  	     FROM Customer_btl
+  3  	     WHERE CustID NOT IN (SELECT CustID FROM Reservation_btl);
+
+    CustID FirstName  LastName                                                                      
+---------- ---------- ---------------                                                               
+       121 Susan      White                                                                         
+
+SQL> 
+SQL> --33 column headings:  ResNum, RoomNum, TotalCharge
+SQL> SELECT R.ResID, RoomNum AS "RoomNum", TO_CHAR((CheckoutDate - CheckinDate) * RateAmt, '$999.99') AS "TotalCharge"
+  2  	     FROM Reservation_btl R, ResDetail_btl RD
+  3  	     WHERE R.ResID = RD.ResID AND
+  4  		       R.ResID = 1005;
+
+     RESID    RoomNum TotalCharge                                                                   
+---------- ---------- -----------                                                                   
+      1005        302  $417.00                                                                      
+      1005        303  $357.00                                                                      
+      1005        304  $447.00                                                                      
+
+SQL> 
+SQL> set echo OFF
